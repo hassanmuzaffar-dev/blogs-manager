@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { getPosts } from '@/lib/post'
+import { getPosts } from '@/app/actions/post'
 import { PostActions } from '../../components/post-actions'
 
 export default async function PostsPage() {

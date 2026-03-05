@@ -2,13 +2,11 @@
 
 import { useState } from "react";
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { ImageUploadField } from "@/components/ui/image-uploader";
 import { Button } from "@/components/ui/button";
 
 interface PostFormProps {
-    apiEndpoint: string;
-    method: 'POST' | 'PUT';
+    action: (formData: FormData) => Promise<{ error?: string } | void | never>;
     initialData?: {
         title?: string;
         content?: string;
@@ -18,11 +16,10 @@ interface PostFormProps {
     cancelHref: string;
 }
 
-export function PostForm({ apiEndpoint, method, initialData, submitLabel, cancelHref }: PostFormProps) {
+export function PostForm({ action, initialData, submitLabel, cancelHref }: PostFormProps) {
     const [image, setImage] = useState<File | string | null>(initialData?.image || null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -36,34 +33,30 @@ export function PostForm({ apiEndpoint, method, initialData, submitLabel, cancel
         setError(null);
 
         const formData = new FormData(e.currentTarget);
-        // Ensure image is appended correctly - ImageUploadField manages its input intrinsically, 
-        // but if it's purely controlled state:
+
         if (image instanceof File) {
             formData.set('image', image);
         } else if (typeof image === 'string') {
-            // we don't need to re-upload an existing image string URL,
-            // the server will simply retain the existing DB image on update if no file is sent.
             formData.delete('image');
         }
 
         try {
-            const response = await fetch(apiEndpoint, {
-                method,
-                body: formData,
-            });
+            const result = await action(formData);
 
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || 'Failed to submit the post.');
+            if (result?.error) {
+                setError(result.error);
+                setIsLoading(false);
             }
-
-            // Successfully created/updated, let's navigate and refresh
-            router.push(cancelHref);
-            router.refresh();
+            // Note: If successful, the server action will trigger a redirect() 
+            // which throws a Next.js navigational error that will skip the lines below.
         } catch (err: any) {
+            // Handle the Next.js RedirectError safely or standard JS errors
+            if (err.message === 'NEXT_REDIRECT') {
+                // Do not reset loading state because we are navigating away
+                return;
+            }
             console.error('Submission error:', err);
             setError(err.message || 'An unexpected error occurred.');
-        } finally {
             setIsLoading(false);
         }
     };

@@ -1,3 +1,4 @@
+import { createPost } from '@/app/actions/post'
 import { PostForm } from '../../../components/post-form'
 
 export default function CreatePostPage() {
@@ -9,8 +10,7 @@ export default function CreatePostPage() {
             </div>
 
             <PostForm
-                apiEndpoint="/api/posts"
-                method="POST"
+                action={createPost}
                 submitLabel="Create Post"
                 cancelHref="/posts"
             />
