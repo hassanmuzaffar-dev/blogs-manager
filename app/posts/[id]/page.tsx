@@ -1,4 +1,4 @@
-import { getPostById } from '@/lib/post'
+import { getPostById } from '@/app/actions/post'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'

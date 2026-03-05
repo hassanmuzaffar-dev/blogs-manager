@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { EllipsisVertical, Edit, Trash2 } from "lucide-react";
+import { deletePost } from "@/app/actions/post";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -37,21 +38,15 @@ export function PostActions({ postId }: PostActionsProps) {
     const handleDelete = async () => {
         setIsDeleting(true);
         try {
-            const response = await fetch(`/api/posts/${postId}`, {
-                method: "DELETE",
-            });
+            const result = await deletePost(postId);
 
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || "Failed to delete post");
+            if (result?.error) {
+                throw new Error(result.error);
             }
-
-            router.refresh();
-            // If we're on the detail page, push back to safety
-            if (window.location.pathname === `/posts/${postId}`) {
-                router.push("/posts");
+        } catch (error: any) {
+            if (error.message === 'NEXT_REDIRECT') {
+                return;
             }
-        } catch (error) {
             console.error("Delete error:", error);
             alert("Failed to delete post.");
         } finally {

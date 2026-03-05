@@ -1,4 +1,4 @@
-import { getPostById } from '@/lib/post'
+import { getPostById, updatePost } from '@/app/actions/post'
 import { notFound } from 'next/navigation'
 import { PostForm } from '../../../../components/post-form'
 
@@ -10,6 +10,8 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
     const post = await getPostById(postId)
     if (!post) return notFound()
 
+    const updatePostWithId = updatePost.bind(null, post.id)
+
     return (
         <div className="container mx-auto py-10 max-w-2xl px-4">
             <div className="mb-8">
@@ -18,8 +20,7 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
             </div>
 
             <PostForm
-                apiEndpoint={`/api/posts/${post.id}`}
-                method="PUT"
+                action={updatePostWithId}
                 initialData={{
                     title: post.title,
                     image: post.image,
