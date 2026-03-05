@@ -26,6 +26,12 @@ export function PostForm({ apiEndpoint, method, initialData, submitLabel, cancel
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        if (!image) {
+            setError("A cover image is required.");
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
 
